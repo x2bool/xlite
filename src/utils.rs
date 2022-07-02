@@ -62,34 +62,31 @@ pub unsafe fn collect_options_from_args(argc: c_int, argv: *const *const c_char)
     options
 }
 
-pub unsafe fn yield_result(p_context: *mut sqlite3_context, api: *mut sqlite3_api_routines, value: Option<DataType>) {
+pub unsafe fn yield_result(p_context: *mut sqlite3_context, api: *mut sqlite3_api_routines, value: &DataType) {
     match value {
-        Some(data_type) => match data_type {
-            DataType::String(s) => {
-                let cstr = CString::new(s).unwrap();
-                let len = cstr.as_bytes().len();
-                let raw = cstr.into_raw();
+        DataType::String(s) => {
+            let cstr = CString::new(s.as_bytes()).unwrap();
+            let len = cstr.as_bytes().len();
+            let raw = cstr.into_raw();
 
-                unsafe extern "C" fn destructor(raw: *mut c_void) {
-                    drop(CString::from_raw(raw as *mut c_char));
-                }
+            unsafe extern "C" fn destructor(raw: *mut c_void) {
+                drop(CString::from_raw(raw as *mut c_char));
+            }
 
-                ((*api).result_text.unwrap())(
-                    p_context,
-                    raw,
-                    len as c_int,
-                    Some(destructor),
-                );
-            }
-            DataType::Int(n) => ((*api).result_int64.unwrap())(p_context, n as c_longlong),
-            DataType::Float(f) => ((*api).result_double.unwrap())(p_context, f),
-            DataType::DateTime(f) => ((*api).result_double.unwrap())(p_context, f),
-            DataType::Bool(b) => {
-                ((*api).result_int.unwrap())(p_context, if b { 1 } else { 0 })
-            }
-            DataType::Empty => ((*api).result_null.unwrap())(p_context),
-            DataType::Error(_e) => ((*api).result_null.unwrap())(p_context),
-        },
-        None => ((*api).result_null.unwrap())(p_context),
+            ((*api).result_text.unwrap())(
+                p_context,
+                raw,
+                len as c_int,
+                Some(destructor),
+            );
+        }
+        DataType::Int(n) => ((*api).result_int64.unwrap())(p_context, *n as c_longlong),
+        DataType::Float(f) => ((*api).result_double.unwrap())(p_context, *f),
+        DataType::DateTime(f) => ((*api).result_double.unwrap())(p_context, *f),
+        DataType::Bool(b) => {
+            ((*api).result_int.unwrap())(p_context, if *b { 1 } else { 0 })
+        }
+        DataType::Empty => ((*api).result_null.unwrap())(p_context),
+        DataType::Error(_e) => ((*api).result_null.unwrap())(p_context),
     }
 }

@@ -3,25 +3,27 @@
 
 mod options;
 mod spreadsheet;
-mod utils;
 pub(crate) mod sqlite;
+mod utils;
 
-use std::ffi::{c_void};
+use calamine::DataType;
+use std::ffi::c_void;
 use std::os::raw::{c_char, c_int, c_longlong};
 use std::sync::{Arc, Mutex};
 
 use crate::options::{parse_option, UsingOption};
 use crate::spreadsheet::{
-    manager::{DataManagerBuilder, DataManager, DataManagerError},
-    reader::{DataReader}
+    manager::{DataManager, DataManagerBuilder, DataManagerError},
+    reader::DataReader,
 };
 use crate::sqlite::{
-    sqlite3, sqlite3_api_routines,
-    sqlite3_context, sqlite3_index_info, sqlite3_int64, sqlite3_module, sqlite3_value,
-    sqlite3_vtab, sqlite3_vtab_cursor,
-    SQLITE_ERROR, SQLITE_OK, SQLITE_OK_LOAD_PERMANENTLY
+    sqlite3, sqlite3_api_routines, sqlite3_context, sqlite3_index_info, sqlite3_int64,
+    sqlite3_module, sqlite3_value, sqlite3_vtab, sqlite3_vtab_cursor, SQLITE_ERROR, SQLITE_OK,
+    SQLITE_OK_LOAD_PERMANENTLY,
 };
-use crate::utils::{collect_options_from_args, declare_table, error_to_sqlite3_string, yield_result};
+use crate::utils::{
+    collect_options_from_args, declare_table, error_to_sqlite3_string, yield_result,
+};
 
 #[no_mangle]
 static mut sqlite3_api: *mut sqlite3_api_routines = std::ptr::null_mut();
@@ -142,7 +144,6 @@ unsafe extern "C" fn x_create(
 
     match manager {
         Ok(mut manager) => {
-
             let columns = manager.get_columns();
             result = declare_table(db, sqlite3_api, columns);
 
@@ -199,7 +200,6 @@ unsafe extern "C" fn x_disconnect(p_vtab: *mut sqlite3_vtab) -> c_int {
 
 #[no_mangle]
 unsafe extern "C" fn x_destroy(p_vtab: *mut sqlite3_vtab) -> c_int {
-
     if !p_vtab.is_null() {
         let table = Box::from_raw(p_vtab as *mut VirtualTable);
         drop(table);
@@ -215,7 +215,8 @@ unsafe extern "C" fn x_open(
 ) -> c_int {
     let table = &mut *(p_vtab as *mut VirtualTable);
     let manager = Arc::clone(&table.manager);
-    let reader = manager.lock().unwrap().read();
+    let mut lock = manager.lock().unwrap();
+    let reader = lock.read();
 
     let cursor: Box<VirtualCursor> = Box::new(VirtualCursor {
         base: sqlite3_vtab_cursor { pVtab: p_vtab },
@@ -264,7 +265,11 @@ unsafe extern "C" fn x_eof(p_cursor: *mut sqlite3_vtab_cursor) -> c_int {
     let lock = Arc::clone(&cursor.reader);
     let reader = lock.lock().unwrap();
 
-    if reader.has_value() { 0 } else { 1 }
+    if reader.has_value() {
+        0
+    } else {
+        1
+    }
 }
 
 #[no_mangle]
@@ -278,7 +283,14 @@ unsafe extern "C" fn x_column(
     let reader = lock.lock().unwrap();
 
     let value = reader.get_value(column as usize);
-    yield_result(p_context, sqlite3_api, value);
+    yield_result(
+        p_context,
+        sqlite3_api,
+        match value {
+            Some(data) => data,
+            None => &DataType::Empty,
+        },
+    );
 
     SQLITE_OK
 }

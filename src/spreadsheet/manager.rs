@@ -1,10 +1,10 @@
-use calamine::{open_workbook_auto, DataType, Range, Reader, Sheets};
-use std::path::Path;
 use crate::options::UsingOption;
 use crate::spreadsheet::{
     cells::{CellIndex, CellRange},
-    reader::DataReader
+    reader::DataReader,
 };
+use calamine::{open_workbook_auto, DataType, Range, Reader, Sheets};
+use std::path::Path;
 
 pub struct DataManager {
     sheets: Sheets,
@@ -35,12 +35,9 @@ impl DataManager {
                         end = CellIndex::new(end.get_x(), r.height() as u32)
                     }
 
-                    r.range(
-                        start.to_zero_indexed(),
-                        end.to_zero_indexed()
-                    )
-                },
-                None => r
+                    r.range(start.to_zero_indexed(), end.to_zero_indexed())
+                }
+                None => r,
             }
         } else {
             Range::empty()
@@ -62,25 +59,7 @@ impl DataManager {
     pub fn read(&mut self) -> DataReader {
         let range = self.get_effective_range();
 
-        let mut rows = vec![];
-        for row in range.rows() {
-            let mut cols = vec![];
-            for col in row {
-                let col = col.clone();
-                cols.push(col)
-            }
-
-            rows.push(cols);
-        }
-
-
-        let rows = rows.into_iter();
-        let rowid = match &self.range {
-            Some(r) => r.get_start().get_y(),
-            None => 0,
-        };
-
-        DataReader::new(rows, rowid)
+        DataReader::new(range)
     }
 }
 
@@ -108,9 +87,7 @@ impl DataManagerBuilder {
                     builder = builder.worksheet(worksheet);
                 }
                 UsingOption::Range(range) => {
-                    builder = builder.range(
-                        CellRange::try_parse(range.as_str()).unwrap()
-                    );
+                    builder = builder.range(CellRange::try_parse(range.as_str()).unwrap());
                 }
             }
         }
@@ -140,7 +117,7 @@ impl DataManagerBuilder {
                     Ok(sheets) => Ok(DataManager {
                         sheets,
                         worksheet,
-                        range: self.range
+                        range: self.range,
                     }),
                     Err(err) => Err(DataManagerError::Calamine(err)),
                 }
