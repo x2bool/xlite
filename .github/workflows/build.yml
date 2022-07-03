@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     branches: [ "master" ]
+    tags: ["v*"]
   pull_request:
     branches: [ "master" ]
 
@@ -22,6 +23,10 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
+    - uses: actions/upload-artifact@v3
+      with:
+        name: linux-x64
+        path: target/release/libxlite.so
   
   build-windows:
   
@@ -35,6 +40,10 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
+    - uses: actions/upload-artifact@v3
+      with:
+        name: windows-x64
+        path: target/release/xlite.dll
 
   build-macos:
   
@@ -48,3 +57,67 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
+    - uses: actions/upload-artifact@v3
+      with:
+        name: macos-x64
+        path: target/release/libxlite.dylib
+
+  create-release:
+
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ build-linux, build-windows, build-macos ]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Add current date to env
+      run: echo "RELEASE_DATE=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+    - uses: actions/download-artifact@v3
+      with:
+        path: .
+    - name: Archive linux-x64
+      run: mv linux-x64/libxlite.so ./libxlite.so && tar -zcvf libxlite-linux-x64.tar.gz libxlite.so && rm libxlite.so
+    - name: Archive windows-x64
+      run: mv windows-x64/xlite.dll ./xlite.dll && zip xlite-windows-x64.zip xlite.dll && rm xlite.dll
+    - name: Archive macos-x64
+      run: mv macos-x64/libxlite.dylib ./libxlite.dylib && zip libxlite-macos-x64.zip libxlite.dylib && rm libxlite.dylib
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ env.RELEASE_DATE }} ${{ github.ref }}
+        body: Release ${{ env.RELEASE_DATE }} ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload linux-x64 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./libxlite-linux-x64.tar.gz
+        asset_name: libxlite-linux-x64.tar.gz
+        asset_content_type: application/octet-stream
+
+    - name: Upload windows-x64 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./xlite-windows-x64.zip
+        asset_name: xlite-windows-x64.zip
+        asset_content_type: application/octet-stream
+
+    - name: Upload macos-x64 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./libxlite-macos-x64.zip
+        asset_name: libxlite-macos-x64.zip
+        asset_content_type: application/octet-stream
