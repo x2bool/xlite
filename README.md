@@ -2,6 +2,20 @@
 
 XLite is a SQLite extension written in Rust. The main purpose of this library is to allow working with spreadsheets from SQLite exposing them as [virtual tables](https://sqlite.org/vtab.html).
 
+### Download
+
+![build](https://github.com/x2bool/xlite/actions/workflows/build.yml/badge.svg)
+
+The following prebuilt libraries are available for [download](https://github.com/x2bool/xlite/releases)
+
+|  | Linux | Windows | MacOS |
+|--|--|--|--|
+| x86 |  |   |   |
+| x86-64 | ✔️ | ✔️ | ✔️ |
+| ARM |   |   |   |
+
+Please contribute the missing build targets if you know how to implement them with GitHub Actions.
+
 ### How to build
 
 ```bash
