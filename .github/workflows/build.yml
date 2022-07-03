@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build debug
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Build release
+      run: cargo build --release
+  
+  build-windows:
+  
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build debug
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Build release
+      run: cargo build --release
+
+  build-macos:
+  
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build debug
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Build release
+      run: cargo build --release
