@@ -43,9 +43,9 @@ pub unsafe fn declare_table(db: *mut sqlite3, api: *mut sqlite3_api_routines, co
     }
     sql.pop();
     sql.push(')');
-    sql.push('\0');
 
-    ((*api).declare_vtab.unwrap())(db, sql.as_bytes().as_ptr() as _)
+    let cstr = CString::new(sql).unwrap();
+    ((*api).declare_vtab.unwrap())(db, cstr.as_ptr() as _)
 }
 
 pub unsafe fn collect_options_from_args(argc: c_int, argv: *const *const c_char) -> Vec<UsingOption> {
