@@ -17,17 +17,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build debug
+    - name: Build x64 debug
       run: cargo build --verbose
-    - name: Run tests
+    - name: Run x64 tests
       run: cargo test --verbose
-    - name: Build release
+    - name: Build x64 release
       run: cargo build --release
+    - name: Install x86 target
+      run: sudo apt install -y gcc-multilib && rustup target install i686-unknown-linux-gnu
+    - name: Build x86 release
+      run: cargo build --release --target=i686-unknown-linux-gnu
     - uses: actions/upload-artifact@v3
       with:
         name: linux-x64
         path: target/release/libxlite.so
-  
+    - uses: actions/upload-artifact@v3
+      with:
+        name: linux-x86
+        path: target/i686-unknown-linux-gnu/release/libxlite.so
+
   build-windows:
   
     runs-on: windows-latest
@@ -76,10 +84,13 @@ jobs:
         path: .
     - name: Archive linux-x64
       run: mv linux-x64/libxlite.so ./libxlite.so && tar -zcvf libxlite-linux-x64.tar.gz libxlite.so && rm libxlite.so
+    - name: Archive linux-x86
+      run: mv linux-x86/libxlite.so ./libxlite.so && tar -zcvf libxlite-linux-x86.tar.gz libxlite.so && rm libxlite.so
     - name: Archive windows-x64
       run: mv windows-x64/xlite.dll ./xlite.dll && zip xlite-windows-x64.zip xlite.dll && rm xlite.dll
     - name: Archive macos-x64
       run: mv macos-x64/libxlite.dylib ./libxlite.dylib && zip libxlite-macos-x64.zip libxlite.dylib && rm libxlite.dylib
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -100,6 +111,16 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./libxlite-linux-x64.tar.gz
         asset_name: libxlite-linux-x64.tar.gz
+        asset_content_type: application/octet-stream
+
+    - name: Upload linux-x86 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./libxlite-linux-x86.tar.gz
+        asset_name: libxlite-linux-x86.tar.gz
         asset_content_type: application/octet-stream
 
     - name: Upload windows-x64 artifact
