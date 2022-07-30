@@ -10,7 +10,7 @@ The following prebuilt libraries are available for [download](https://github.com
 
 |  | Linux | Windows | MacOS |
 |--|--|--|--|
-| x86 | [libxlite.so.tar.gz](https://github.com/x2bool/xlite/releases/latest/download/libxlite-linux-x86.tar.gz)️ |   | N/A |
+| x86 | [libxlite.so.tar.gz](https://github.com/x2bool/xlite/releases/latest/download/libxlite-linux-x86.tar.gz)️ | [xlite.dll.zip](https://github.com/x2bool/xlite/releases/latest/download/xlite-windows-x86.zip)️ | N/A |
 | x86-64 | [libxlite.so.tar.gz](https://github.com/x2bool/xlite/releases/latest/download/libxlite-linux-x64.tar.gz)️ | [xlite.dll.zip](https://github.com/x2bool/xlite/releases/latest/download/xlite-windows-x64.zip)️ | [libxlite.dylib.zip](https://github.com/x2bool/xlite/releases/latest/download/libxlite-macos-x64.zip) |
 | AArch64 |   |   |   |
 
