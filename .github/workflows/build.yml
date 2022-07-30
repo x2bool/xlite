@@ -11,60 +11,64 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-linux:
-
+  build-linux-x64:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: Build x64 debug
+    - name: Build debug
       run: cargo build --verbose
-    - name: Run x64 tests
+    - name: Run tests
       run: cargo test --verbose
-    - name: Build x64 release
+    - name: Build release
       run: cargo build --release
-    - name: Install x86 target
-      run: sudo apt install -y gcc-multilib && rustup target install i686-unknown-linux-gnu
-    - name: Build x86 release
-      run: cargo build --release --target=i686-unknown-linux-gnu
     - uses: actions/upload-artifact@v3
       with:
         name: linux-x64
         path: target/release/libxlite.so
+
+  build-linux-x86:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install target
+      run: sudo apt install -y gcc-multilib && rustup target install i686-unknown-linux-gnu
+    - name: Build release
+      run: cargo build --release --target=i686-unknown-linux-gnu
     - uses: actions/upload-artifact@v3
       with:
         name: linux-x86
         path: target/i686-unknown-linux-gnu/release/libxlite.so
 
-  build-windows:
-  
+  build-windows-x64:
     runs-on: windows-latest
-    
     steps:
     - uses: actions/checkout@v3
-    - name: Build x64 debug
+    - name: Build debug
       run: cargo build --verbose
-    - name: Run x64 tests
+    - name: Run tests
       run: cargo test --verbose
-    - name: Build x64 release
+    - name: Build release
       run: cargo build --release
-    - name: Install x86 target
-      run: rustup target add i686-pc-windows-msvc
-    - name: Build x86 release
-      run: cargo build --release --target=i686-pc-windows-msvc
     - uses: actions/upload-artifact@v3
       with:
         name: windows-x64
         path: target/release/xlite.dll
+
+  build-windows-x86:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install target
+      run: rustup target add i686-pc-windows-msvc
+    - name: Build release
+      run: cargo build --release --target=i686-pc-windows-msvc
     - uses: actions/upload-artifact@v3
       with:
         name: windows-x86
         path: target/i686-pc-windows-msvc/release/xlite.dll
 
-  build-macos:
-  
+  build-macos-x64:
     runs-on: macos-latest
-    
     steps:
     - uses: actions/checkout@v3
     - name: Build debug
@@ -81,7 +85,7 @@ jobs:
   create-release:
 
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [ build-linux, build-windows, build-macos ]
+    needs: [ build-linux-x64, build-linux-x86, build-windows-x64, build-windows-x86, build-macos-x64 ]
     runs-on: ubuntu-latest
 
     steps:
