@@ -82,10 +82,29 @@ jobs:
         name: macos-x64
         path: target/release/libxlite.dylib
 
+  build-macos-aarch64:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install target
+      run: rustup target add aarch64-apple-darwin
+    - name: Build release
+      run: cargo build --release --target=aarch64-apple-darwin
+    - uses: actions/upload-artifact@v3
+      with:
+        name: macos-aarch64
+        path: target/aarch64-apple-darwin/release/libxlite.dylib
+
   create-release:
 
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [ build-linux-x64, build-linux-x86, build-windows-x64, build-windows-x86, build-macos-x64 ]
+    needs:
+    - build-linux-x64
+    - build-linux-x86
+    - build-windows-x64
+    - build-windows-x86
+    - build-macos-x64
+    - build-macos-aarch64
     runs-on: ubuntu-latest
 
     steps:
@@ -104,6 +123,8 @@ jobs:
       run: mv windows-x86/xlite.dll ./xlite.dll && zip xlite-windows-x86.zip xlite.dll && rm xlite.dll
     - name: Archive macos-x64
       run: mv macos-x64/libxlite.dylib ./libxlite.dylib && zip libxlite-macos-x64.zip libxlite.dylib && rm libxlite.dylib
+    - name: Archive macos-aarch64
+      run: mv macos-aarch64/libxlite.dylib ./libxlite.dylib && zip libxlite-macos-aarch64.zip libxlite.dylib && rm libxlite.dylib
 
     - name: Create Release
       id: create_release
@@ -165,4 +186,14 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./libxlite-macos-x64.zip
         asset_name: libxlite-macos-x64.zip
+        asset_content_type: application/octet-stream
+
+    - name: Upload macos-aarch64 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./libxlite-macos-aarch64.zip
+        asset_name: libxlite-macos-aarch64.zip
         asset_content_type: application/octet-stream
