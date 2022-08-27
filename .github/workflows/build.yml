@@ -133,8 +133,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ env.RELEASE_DATE }} ${{ github.ref }}
-        body: Release ${{ env.RELEASE_DATE }} ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: Release ${{ github.ref }} ${{ env.RELEASE_DATE }}
         draft: false
         prerelease: false
 
