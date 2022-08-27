@@ -6,7 +6,9 @@ XLite is a SQLite extension written in Rust. The main purpose of this library is
 
 ![build](https://github.com/x2bool/xlite/actions/workflows/build.yml/badge.svg)
 
-The following prebuilt libraries are available for [download](https://github.com/x2bool/xlite/releases)
+The following prebuilt libraries are available for [download](https://github.com/x2bool/xlite/releases):
+
+![release](https://img.shields.io/github/v/release/x2bool/xlite?display_name=release)
 
 |  | Linux | Windows | MacOS |
 |--|--|--|--|
