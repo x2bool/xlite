@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-calamine = "0.18.0"
+calamine = "0.19.1"
 nom = "7.1.0"
 
 [dev-dependencies]
