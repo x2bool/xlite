@@ -38,8 +38,9 @@ pub unsafe fn error_to_sqlite3_string(api: *mut sqlite3_api_routines, err: Strin
 pub unsafe fn declare_table(db: *mut sqlite3, api: *mut sqlite3_api_routines, columns: Vec<String>) -> c_int {
     let mut sql = String::from("CREATE TABLE sheet(");
     for column in columns {
+        sql.push('`');
         sql.push_str(column.as_str());
-        sql.push(',');
+        sql.push_str("`,");
     }
     sql.pop();
     sql.push(')');
