@@ -1,6 +1,6 @@
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case};
-use nom::character::complete::{alpha1, digit0, multispace0, multispace1, none_of};
+use nom::character::complete::{alpha1, digit0, digit1, multispace0, multispace1, none_of};
 use nom::combinator::{map, recognize};
 use nom::{IResult, Parser};
 use nom::sequence::{delimited, preceded, separated_pair, terminated, tuple};
@@ -9,6 +9,7 @@ pub enum UsingOption {
     File(String),
     Worksheet(String),
     Range(String),
+    ColNames(String),
 }
 
 pub fn parse_option(input: &str) -> IResult<&str, UsingOption> {
@@ -16,6 +17,7 @@ pub fn parse_option(input: &str) -> IResult<&str, UsingOption> {
         parse_filename_option,
         parse_worksheet_option,
         parse_range_option,
+        parse_colnames_option,
         ))).parse(input)
 }
 
@@ -47,6 +49,16 @@ fn parse_range_option(input: &str) -> IResult<&str, UsingOption> {
 
     map(separated_pair(option, multispace1, value),
         |t: (&str, &str)| UsingOption::Range(t.1.to_string()))(input)
+}
+
+fn parse_colnames_option(input: &str) -> IResult<&str, UsingOption> {
+    let option = tag_no_case("COLNAMES");
+
+    let value = preceded(
+        tag("'"), terminated(digit1, tag("'")));
+
+    map(separated_pair(option, multispace1, value),
+        |t: (&str, &str)| UsingOption::ColNames(t.1.to_string()))(input)
 }
 
 fn parse_with_spaces<'a, T>(parser: impl Parser<&'a str, T, nom::error::Error<&'a str>>)
