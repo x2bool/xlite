@@ -109,7 +109,14 @@ fn column_to_index(column: &str) -> u32 {
 }
 
 fn index_to_column(index: u32) -> String {
-    format!("{}", (b'A' + ((index - 1) as u8)) as char) // TODO: multiple chars
+    let mut out = String::new();
+    let mut index = index;
+    while index > 0 {
+        let x = (index - 1) % 26;
+        out.insert(0, (b'A' + x as u8) as char);
+        index = (index  - x) / 26;
+    }
+    out
 }
 
 fn row_to_index(row: &str) -> u32 {
@@ -146,6 +153,24 @@ mod tests {
     fn index_to_column_gives_correct_value_for_25() {
         let column = index_to_column(26);
         assert_eq!(column, "Z")
+    }
+
+    #[test]
+    fn index_to_column_gives_correct_value_for_26() {
+        let column = index_to_column(27);
+        assert_eq!(column, "AA")
+    }
+
+    #[test]
+    fn index_to_column_gives_correct_value_for_27() {
+        let column = index_to_column(28);
+        assert_eq!(column, "AB")
+    }
+
+    #[test]
+    fn index_to_column_gives_correct_value_for_775() {
+        let column = index_to_column(774);
+        assert_eq!(column, "ACT")
     }
 
     #[test]
