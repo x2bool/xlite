@@ -4,10 +4,12 @@ use crate::spreadsheet::{
     reader::DataReader,
 };
 use calamine::{open_workbook_auto, DataType, Range, Reader, Sheets};
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 
 pub struct DataManager {
-    sheets: Sheets,
+    sheets: Sheets<BufReader<File>>,
     worksheet: String,
     range: Option<CellRange>,
 }
@@ -19,7 +21,7 @@ pub enum DataManagerError {
 }
 
 impl DataManager {
-    pub fn get_sheets(&mut self) -> &mut Sheets {
+    pub fn get_sheets(&mut self) -> &mut Sheets<BufReader<File>> {
         &mut self.sheets
     }
 
