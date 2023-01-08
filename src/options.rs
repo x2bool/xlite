@@ -132,4 +132,17 @@ mod tests {
             _ => panic!("Expected range option")
         }
     }
+
+    #[test]
+    fn parse_colnames_option_produces_colname() {
+        let (output, option) = parse_colnames_option("COLNAMES '152'").unwrap();
+
+        assert_eq!(output, "");
+        match option {
+            UsingOption::ColNames(colname) => {
+                assert_eq!(colname, "152");
+            },
+            _ => panic!("Expected colnames option")
+        }
+    }
 }
