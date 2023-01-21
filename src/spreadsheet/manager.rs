@@ -7,11 +7,13 @@ use calamine::{open_workbook_auto, DataType, Range, Reader, Sheets};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+use std::str::FromStr;
 
 pub struct DataManager {
     sheets: Sheets<BufReader<File>>,
     worksheet: String,
     range: Option<CellRange>,
+    colnames_row: Option<u32>,
 }
 
 pub enum DataManagerError {
@@ -49,9 +51,17 @@ impl DataManager {
     pub fn get_columns(&mut self) -> Vec<String> {
         let range = self.get_effective_range();
         if range.get_size().1 > 0 {
+            let row_workspace_sheet = self.colnames_row
+                .and_then(|v| Some((v, self.sheets.worksheet_range(self.worksheet.as_str()))))
+                .and_then(|(row, sheet)| Some((row, sheet?.ok()?)));
             (range.start().unwrap().1..=range.end().unwrap().1)
                 .into_iter()
-                .map(|n| CellIndex::new(n + 1, 1).get_x_as_string())
+                .map(|n| {
+                    row_workspace_sheet
+                        .as_ref()
+                        .and_then(|(row, sheet)| sheet.get_value((*row, n)).map(|v| v.to_string()))
+                        .unwrap_or_else(|| CellIndex::new(n + 1, 1).get_x_as_string())
+                })
                 .collect()
         } else {
             Vec::new()
@@ -70,6 +80,7 @@ pub struct DataManagerBuilder {
     file: Option<String>,
     worksheet: Option<String>,
     range: Option<CellRange>,
+    colnames_row: Option<u32>,
 }
 
 impl DataManagerBuilder {
@@ -91,6 +102,11 @@ impl DataManagerBuilder {
                 UsingOption::Range(range) => {
                     builder = builder.range(CellRange::try_parse(range.as_str()).unwrap());
                 }
+                UsingOption::ColNames(colnames) => {
+                    // We substract 1 to go from excel indexing (which starts at 1) to 0-based
+                    // indexing of the row.
+                    builder = builder.colnames_row(u32::from_str(colnames.as_str()).unwrap().saturating_sub(1));
+                },
             }
         }
 
@@ -112,6 +128,11 @@ impl DataManagerBuilder {
         self
     }
 
+    pub fn colnames_row(mut self, row: u32) -> Self {
+        self.colnames_row = Some(row);
+        self
+    }
+
     pub fn open(self) -> Result<DataManager, DataManagerError> {
         if let Some(file) = self.file {
             if let Some(worksheet) = self.worksheet {
@@ -120,6 +141,7 @@ impl DataManagerBuilder {
                         sheets,
                         worksheet,
                         range: self.range,
+                        colnames_row: self.colnames_row,
                     }),
                     Err(err) => Err(DataManagerError::Calamine(err)),
                 }

@@ -141,3 +141,40 @@ fn test_abcdef_file_aggregate() {
         AbcdAgg { kind: "odd".to_string(), count: 3 },
     ]);
 }
+
+#[test]
+fn test_abcdef_file_with_colnames() {
+    let connection = init_connection();
+    connection.execute("\
+        CREATE VIRTUAL TABLE test_data USING xlite(\
+            FILENAME './tests/abcdef_colnames.xlsx',\
+            WORKSHEET 'Sheet1',\
+            RANGE 'A2:D7',
+            COLNAMES '1'
+        );\
+    ", params![]).unwrap();
+
+    let mut query = connection.prepare("\
+        SELECT alpha, number, word, kind FROM test_data;\
+    ").unwrap();
+
+    let rows = query.query_map(params![], |row| Ok(Abcd {
+        alpha: row.get(0).unwrap(),
+        number: row.get(1).unwrap(),
+        word: row.get(2).unwrap(),
+        kind: row.get(3).unwrap(),
+    })).unwrap();
+
+    let data = rows
+        .map(|r| r.unwrap())
+        .collect::<Vec<Abcd>>();
+
+    assert_eq!(data, vec![
+        Abcd { alpha: "A".to_string(), number: 10.0, word: "ten".to_string(), kind: "even".to_string() },
+        Abcd { alpha: "B".to_string(), number: 11.0, word: "eleven".to_string(), kind: "odd".to_string() },
+        Abcd { alpha: "C".to_string(), number: 12.0, word: "twelve".to_string(), kind: "even".to_string() },
+        Abcd { alpha: "D".to_string(), number: 13.0, word: "thirteen".to_string(), kind: "odd".to_string() },
+        Abcd { alpha: "E".to_string(), number: 14.0, word: "fourteen".to_string(), kind: "even".to_string() },
+        Abcd { alpha: "F".to_string(), number: 15.0, word: "fifteen".to_string(), kind: "odd".to_string() },
+    ]);
+}
