@@ -152,7 +152,7 @@ jobs:
         release_name: ${{ github.ref }}
         body: Release ${{ github.ref }} ${{ env.RELEASE_DATE }}
         draft: false
-        prerelease: false
+        prerelease: true
 
     - name: Upload linux-x64 artifact
       uses: actions/upload-release-asset@v1
