@@ -16,12 +16,6 @@ The following prebuilt libraries are available for [download](https://github.com
 | x86-64 | [libxlite.so.tar.gz](https://github.com/x2bool/xlite/releases/latest/download/libxlite-linux-x64.tar.gz)️ | [xlite.dll.zip](https://github.com/x2bool/xlite/releases/latest/download/xlite-windows-x64.zip)️ | [libxlite.dylib.zip](https://github.com/x2bool/xlite/releases/latest/download/libxlite-macos-x64.zip) |
 | AArch64 (ARM64) | [libxlite.so.tar.gz](https://github.com/x2bool/xlite/releases/latest/download/libxlite-linux-aarch64.tar.gz)️ |   | [libxlite.dylib.zip](https://github.com/x2bool/xlite/releases/latest/download/libxlite-macos-aarch64.zip) |
 
-### How to build
-
-```bash
-cargo build --release
-```
-
 This step will produce `libxlite.so` or `libxlite.dylib` or `xlite.dll` depending on your operation system.
 
 ### How to use
@@ -38,10 +32,11 @@ This will load `xlite` module, now it can be used to create virtual tables.
 Creating a virtual table (this sample uses the .xslx file from the tests directory):
 
 ```sql
-CREATE VIRTUAL TABLE test_data USING xlite(
-    FILENAME './tests/abcdef.xlsx',
+CREATE VIRTUAL TABLE test_data USING xlite (
+    FILENAME './tests/abcdef_colnames.xlsx',
     WORKSHEET 'Sheet1',
-    RANGE 'A2:F'
+    RANGE 'A2:F', -- optional
+    COLNAMES '1' -- optional
 );
 ```
 
@@ -52,10 +47,10 @@ Optional `RANGE` parameter is used here to skip the first row in the table. `A2:
 Querying:
 
 ```sql
-SELECT A, B, C, D, E, F from test_data;
+SELECT A, B, C, D, E, F FROM test_data;
 ```
 
-Columns are named according to their name (index) in the spreadsheet.
+Columns are named according to their name (index) in the spreadsheet, unless an optional `COLNAMES` argument is provided - in this case column names will be taken from the row of spreadsheet specified by this option.
 
 ```sql
 SELECT COUNT(*), D FROM test_data GROUP BY D ORDER BY COUNT(*);
@@ -71,6 +66,11 @@ DROP TABLE test_data;
 
 This statement will drop only the virtual table. Physical file won't be deleted.
 
+### How to build
+
+```bash
+cargo build --release
+```
 
 ### Limitations
 
@@ -78,4 +78,4 @@ This statement will drop only the virtual table. Physical file won't be deleted.
 
 ### About
 
-This project is experimental, use at your own risk. The project is developed in my free time as a way to learn Rust and database systems.
+This project is experimental and it is developed and maintained in my free time as a hobby project.
