@@ -103,7 +103,7 @@ impl DataManagerBuilder {
                     builder = builder.range(CellRange::try_parse(range.as_str()).unwrap());
                 }
                 UsingOption::ColNames(colnames) => {
-                    // We substract 1 to go from excel indexing (which starts at 1) to 0-based
+                    // We subtract 1 to go from excel indexing (which starts at 1) to 0-based
                     // indexing of the row.
                     builder = builder.colnames_row(u32::from_str(colnames.as_str()).unwrap().saturating_sub(1));
                 },
