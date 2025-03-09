@@ -21,7 +21,7 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: linux-x64
         path: target/release/libxlite.so
@@ -34,7 +34,7 @@ jobs:
       run: sudo apt install -y gcc-multilib && rustup target install i686-unknown-linux-gnu
     - name: Build release
       run: cargo build --release --target=i686-unknown-linux-gnu
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: linux-x86
         path: target/i686-unknown-linux-gnu/release/libxlite.so
@@ -47,7 +47,7 @@ jobs:
       run: sudo apt install -y gcc-aarch64-linux-gnu && rustup target install aarch64-unknown-linux-gnu
     - name: Build release
       run: cargo build --release --target=aarch64-unknown-linux-gnu
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: linux-aarch64
         path: target/aarch64-unknown-linux-gnu/release/libxlite.so
@@ -62,7 +62,7 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: windows-x64
         path: target/release/xlite.dll
@@ -75,7 +75,7 @@ jobs:
       run: rustup target add i686-pc-windows-msvc
     - name: Build release
       run: cargo build --release --target=i686-pc-windows-msvc
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: windows-x86
         path: target/i686-pc-windows-msvc/release/xlite.dll
@@ -90,7 +90,7 @@ jobs:
       run: cargo test --verbose
     - name: Build release
       run: cargo build --release
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: macos-x64
         path: target/release/libxlite.dylib
@@ -103,7 +103,7 @@ jobs:
       run: rustup target add aarch64-apple-darwin
     - name: Build release
       run: cargo build --release --target=aarch64-apple-darwin
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: macos-aarch64
         path: target/aarch64-apple-darwin/release/libxlite.dylib
