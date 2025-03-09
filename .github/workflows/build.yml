@@ -124,7 +124,7 @@ jobs:
     steps:
     - name: Add current date to env
       run: echo "RELEASE_DATE=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         path: .
     - name: Archive linux-x64
