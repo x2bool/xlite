@@ -110,6 +110,7 @@ jobs:
 
   create-release:
 
+    permissions: write-all
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
     - build-linux-x64
